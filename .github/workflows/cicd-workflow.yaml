@@ -1,0 +1,101 @@
+name: CICD Pipeline
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: self-hosted
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: List files
+      run: ls -ltr
+
+    - name: Build and Test
+      run: |
+        cd spring-boot-app 
+        mvn clean package
+        ls -l target/ # Verify the JAR file was created
+
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: spring-boot-app
+        path: spring-boot-app/target/*.jar
+
+  static-code-analysis:
+    needs: build-and-test
+    runs-on: self-hosted
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Download JAR artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: spring-boot-app
+        path: spring-boot-app/target/    
+        
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: SonarQube Scan
+      run: cd spring-boot-app && mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }} -Dsonar.host.url=${{ vars.SONAR_URL }}
+
+  build-and-push-docker:
+    needs: static-code-analysis
+    runs-on: self-hosted
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Download JAR artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: spring-boot-app
+        path: spring-boot-app/target/
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ vars.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_PASS }}
+
+    - name: Build and push Docker image
+      id: docker_build
+      uses: docker/build-push-action@v4
+      with:
+        context: ./spring-boot-app
+        push: true
+        tags: ${{ vars.DOCKER_IMAGE }}:${{ github.run_number }}
+
+  update-deployment:
+    needs: build-and-push-docker
+    runs-on: self-hosted
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # Required for proper git operations
+
+    - name: Configure Git
+      run: |
+        git config user.email "${{ vars.GIT_USER_EMAIL }}"
+        git config user.name "${{ vars.GIT_USER_NAME }}"
+
+    - name: Update deployment file # This is will deploy app to kubernetes cluster
+      run: |
+        sed -i "s|image:.*|image: ${{ vars.DOCKER_IMAGE }}:${{ github.run_number }}|g" spring-boot-app-manifests/deployment.yml
+        git add spring-boot-app-manifests/deployment.yml
+        git commit -m "Update deployment image to version ${{ github.run_number }}"
+        git push https://${{ secrets.REPO_TOKEN }}@github.com/${{ github.repository }}.git HEAD:master
