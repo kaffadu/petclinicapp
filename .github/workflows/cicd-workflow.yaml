@@ -48,7 +48,8 @@ jobs:
         distribution: 'temurin'
 
     - name: SonarQube Scan
-      run: cd pet-clinic-app 
+      run: | 
+      cd pet-clinic-app 
       mvn sonar:sonar \
         -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }} \
         -Dsonar.host.url=${{ vars.SONAR_URL }}
