@@ -48,7 +48,7 @@ jobs:
         distribution: 'temurin'
 
     - name: SonarQube Scan
-      run: cd spring-boot-app && mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }} -Dsonar.host.url=${{ vars.SONAR_URL }}
+      run: cd pet-clinic-app && mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }} -Dsonar.host.url=${{ vars.SONAR_URL }}
 
   build-and-push-docker:
     needs: static-code-analysis
