@@ -2,9 +2,9 @@ name: CICD Pipeline
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 jobs:
   build-and-test:
@@ -18,15 +18,15 @@ jobs:
 
     - name: Build and Test
       run: |
-        cd spring-boot-app 
+        cd pet-clinic-app 
         mvn clean package
         ls -l target/ # Verify the JAR file was created
 
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4
       with:
-        name: spring-boot-app
-        path: spring-boot-app/target/*.jar
+        name: pet-clinic-app
+        path: pet-clinic-app/target/*.jar
 
   static-code-analysis:
     needs: build-and-test
@@ -38,8 +38,8 @@ jobs:
     - name: Download JAR artifact
       uses: actions/download-artifact@v4
       with:
-        name: spring-boot-app
-        path: spring-boot-app/target/    
+        name: pet-clinic-app
+        path: pet-clinic-app/target/    
         
     - name: Set up JDK
       uses: actions/setup-java@v3
@@ -60,8 +60,8 @@ jobs:
     - name: Download JAR artifact
       uses: actions/download-artifact@v4
       with:
-        name: spring-boot-app
-        path: spring-boot-app/target/
+        name: pet-clinic-app
+        path: pet-clinic-app/target/
 
     - name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -73,7 +73,7 @@ jobs:
       id: docker_build
       uses: docker/build-push-action@v4
       with:
-        context: ./spring-boot-app
+        context: ./pet-clinic-app
         push: true
         tags: ${{ vars.DOCKER_IMAGE }}:${{ github.run_number }}
 
@@ -96,6 +96,6 @@ jobs:
     - name: Update deployment file # This is will deploy app to kubernetes cluster
       run: |
         sed -i "s|image:.*|image: ${{ vars.DOCKER_IMAGE }}:${{ github.run_number }}|g" spring-boot-app-manifests/deployment.yml
-        git add spring-boot-app-manifests/deployment.yml
+        git add pet-clinic-app-manifests/deployment.yml
         git commit -m "Update deployment image to version ${{ github.run_number }}"
         git push https://${{ secrets.REPO_TOKEN }}@github.com/${{ github.repository }}.git HEAD:master
