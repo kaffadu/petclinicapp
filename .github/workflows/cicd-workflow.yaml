@@ -53,6 +53,8 @@ jobs:
         mvn sonar:sonar \
           -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }} \
           -Dsonar.host.url=${{ vars.SONAR_URL }}
+          -Dsonar.projectKey=petclinicapp
+          -Dsonar.organization=pkicloudconsult
 
   build-and-push-docker:
     needs: static-code-analysis
