@@ -55,6 +55,8 @@ jobs:
           -Dsonar.host.url=${{ vars.SONAR_URL }}
           -Dsonar.projectKey=pki-spring-petclinic
           -Dsonar.organization=pkicloudconsult
+          -DgroupId=org.springframework.samples
+          -DartifactId=pki-spring-petclinic
 
   build-and-push-docker:
     needs: static-code-analysis
