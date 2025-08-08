@@ -51,7 +51,7 @@ jobs:
       run: | 
         cd pet-clinic-app 
         mvn sonar:sonar \
-          -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }} \
+          -Dsonar.login=3b1841de6b3ad69420e5d05d92c1aa97f2b67319 \
           -Dsonar.host.url=${{ vars.SONAR_URL }}
           -Dsonar.projectKey=pki-petclinicapp
           -Dsonar.organization=pkicloudconsult
