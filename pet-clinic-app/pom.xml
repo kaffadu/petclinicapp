@@ -25,9 +25,9 @@
   <properties>
     <!-- Generic properties -->
     <java.version>17</java.version>
-    <sonar.organization>pkicloudconsult</sonar.organization>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <sonar.organization>pki-spring-petclinic</sonar.organization>
+    <sonar.projectKey>pki-spring-petclinic</sonar.projectKey>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <!-- Important for reproducible builds. Update using e.g. ./mvnw versions:set -DnewVersion=... -->
     <project.build.outputTimestamp>2023-05-10T07:42:50Z</project.build.outputTimestamp>
 
